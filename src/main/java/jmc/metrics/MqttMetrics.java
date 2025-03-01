@@ -69,6 +69,8 @@ public class MqttMetrics {
                 .ifPresent(t -> t.record(elapsed, timeUnit));
     }
 
-    public void incrementPublishFailure(String heartbeat) {
+    public void incrementPublishFailure(String topic) {
+        Optional.ofNullable(publishFailureCounters.get(topic))
+                .ifPresent(Counter::increment);
     }
 }
