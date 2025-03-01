@@ -2,7 +2,7 @@
 Websocket MQTT bridge demo
 
 ### Measures bridge to broker latency
-<img width="856" alt="image" src="https://github.com/user-attachments/assets/fbe8370d-97bc-446b-8117-0a656f283d27" />
+<img width="856" alt="image" src="src/main/resources/static/images/publish_latency_graph.png" />
 
 ## Heartbeat topic example:
 
