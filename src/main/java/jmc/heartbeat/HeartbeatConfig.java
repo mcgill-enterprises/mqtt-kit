@@ -17,22 +17,32 @@ import java.util.concurrent.TimeUnit;
 @EnableScheduling
 @Slf4j
 public class HeartbeatConfig {
+    public static final long heartbeatInterval = 10 * 1000L;
     @Autowired
     MqttMetrics metrics;
     @Autowired
     private MqttClient mqttClient;
-    @Scheduled(fixedDelay = 10 * 1000)
+    @Scheduled(fixedDelay = heartbeatInterval)
     public void heartbeat() {
         long startTime = System.currentTimeMillis();
-        mqttClient
-                .publish("heartbeat",
-                        Buffer.buffer(Instant.now().toString()),
-                        MqttQoS.AT_LEAST_ONCE,
-                        false,
-                        false)
-                .onFailure(failed ->
-                        metrics.incrementPublishFailure("heartbeat"))
-                .onComplete(publish ->
-                    metrics.recordPublishTime("heartbeat", System.currentTimeMillis() - startTime, TimeUnit.MILLISECONDS));
+        if (mqttClient.isConnected()) {
+            mqttClient.ping();
+            mqttClient
+                    .publish("heartbeat",
+                            Buffer.buffer(Instant.now().toString()),
+                            MqttQoS.AT_LEAST_ONCE,
+                            false,
+                            false)
+                    .onFailure(failed -> {
+                            log.error("MQTT publish failure on topic {}", "heartbeat", failed.getCause());
+                            metrics.incrementPublishFailure("heartbeat");
+                    })
+                    .onSuccess(publish -> {
+                            log.trace("MQTT publish failure on topic {}: {}", "heartbeat", publish);
+                            metrics.recordPublishTime("heartbeat", System.currentTimeMillis() - startTime, TimeUnit.MILLISECONDS);
+                    });
+        } else {
+            log.error("mqtt client disconnected");
+            metrics.incrementPublishFailure("heartbeat");        }
     }
 }

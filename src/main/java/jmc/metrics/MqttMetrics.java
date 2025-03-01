@@ -18,11 +18,18 @@ public class MqttMetrics {
     private final Map<String, Counter> publishFailureCounters;
     private final Map<String, Timer> publishTimers;
     private final AtomicLong conns;
+    private final Counter pubAckTimeoutHandler;
+
     public MqttMetrics(MeterRegistry meterRegistry) {
         conns = new AtomicLong(0);
         clientConnectionCounter = Gauge.builder("mqtt_client_conns", conns, AtomicLong::doubleValue)
                 .description("MQTT Client connections")
                 .tag("mqtt", "client")
+                .register(meterRegistry);
+
+        pubAckTimeoutHandler = Counter.builder("mqtt_client_puback_timeouts")
+                .description("MQTT PUBACK timeouts")
+                .tag("mqtt", "puback")
                 .register(meterRegistry);
 
         publishTimers = Map.of(
@@ -72,5 +79,9 @@ public class MqttMetrics {
     public void incrementPublishFailure(String topic) {
         Optional.ofNullable(publishFailureCounters.get(topic))
                 .ifPresent(Counter::increment);
+    }
+
+    public void incrementPubackTimeouts() {
+        pubAckTimeoutHandler.increment();
     }
 }

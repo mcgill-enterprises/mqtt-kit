@@ -37,6 +37,9 @@ public class MqttServerConfig {
 
             // accept connection from the remote client
             endpoint.accept(false /* no session */);
+            endpoint.pingHandler(_ -> {
+                log.trace("MQTT server ping");
+            });
             endpoint.disconnectHandler(disc -> {
                 log.info("MQTT client [{} request to disconnect]", endpoint.clientIdentifier());
                         metrics.decrementMqttClients();
