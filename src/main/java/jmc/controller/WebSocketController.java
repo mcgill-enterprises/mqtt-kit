@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 @Slf4j
-public class  WebSocketController {
+public class WebSocketController {
     @Autowired
     private MqttClient mqttClient;
 
