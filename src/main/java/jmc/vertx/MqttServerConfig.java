@@ -1,20 +1,26 @@
 package jmc.vertx;
 
 import io.netty.handler.codec.mqtt.MqttQoS;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.MqttServer;
+import io.vertx.mqtt.messages.MqttPublishMessage;
+import jmc.metrics.MqttMetrics;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.nio.charset.Charset;
 
 @Configuration
 @Slf4j
 public class MqttServerConfig {
+    @Autowired
+    MqttMetrics metrics;
     @Bean("mqttServer")
-    public MqttServer mqttServer(Vertx vertx, SimpMessagingTemplate template) {
+    public MqttServer mqttServer(Vertx vertx) {
         MqttServer mqttServer = MqttServer.create(vertx);
         mqttServer.endpointHandler(endpoint -> {
             // shows main connect info
@@ -31,9 +37,17 @@ public class MqttServerConfig {
 
             // accept connection from the remote client
             endpoint.accept(false /* no session */);
-            endpoint.disconnectHandler(disc -> log.info("MQTT client [{} request to disconnect]", endpoint.clientIdentifier())).publishHandler(message -> {
-                        log.info("received message [{}] on topic [{}] with QoS [{}]", message.payload().toString(Charset.defaultCharset()), message.topicName(), message.qosLevel());
-                        template.convertAndSend("/topic/" + message.topicName(), String.format("%s", message.payload().toString(Charset.defaultCharset())));
+            endpoint.disconnectHandler(disc -> {
+                log.info("MQTT client [{} request to disconnect]", endpoint.clientIdentifier());
+                        metrics.decrementMqttClients();
+                    })
+                    .publishHandler(message -> {
+                        log.info("server received message [{}] on topic [{}] with QoS [{}]", message.payload().toString(Charset.defaultCharset()), message.topicName(), message.qosLevel());
+
+                        // Publish message to the client
+                        // https://vertx.io/docs/4.1.8/vertx-mqtt/java/#_publish_message_to_the_client
+                        publishClientResponse(endpoint, message).onFailure(failedResponse -> log.error("response message publish failed", failedResponse.getCause()));
+
                         if (message.qosLevel() == MqttQoS.AT_LEAST_ONCE) {
                             endpoint.publishAcknowledge(message.messageId());
                         } else if (message.qosLevel() == MqttQoS.EXACTLY_ONCE) {
@@ -41,7 +55,10 @@ public class MqttServerConfig {
                         }
                     })
                     .publishReleaseHandler(endpoint::publishComplete)
-                    .subscribeHandler(sub -> log.info("subscribed {}", sub.topicSubscriptions().getFirst()));
+                    .unsubscribeHandler(unsub -> log.info("unsubscribed {}", unsub.topics().getFirst()))
+                    .subscribeHandler(sub -> {
+                        log.info("subscribed {}", sub.topicSubscriptions().getFirst());});
+            metrics.incrementMqttClients();
         }).listen(ar -> {
             log.info("MQTT server is listening on port {}", ar.result().actualPort());
             if (!ar.succeeded()) {
@@ -49,5 +66,9 @@ public class MqttServerConfig {
             }
         });
         return mqttServer;
+    }
+
+    private Future<Integer> publishClientResponse(MqttEndpoint endpoint, MqttPublishMessage message) {
+        return endpoint.publish(message.topicName(), message.payload(), MqttQoS.AT_LEAST_ONCE, false, false);
     }
 }
