@@ -16,7 +16,6 @@ public class MqttClientConfig {
 
     @Bean("mqttClient")
     public MqttClient mqttClient(Vertx vertx, MqttServer mqttServer) throws InterruptedException {
-        log.info("mqtt client {}", vertx);
         MqttClient mqttClient = MqttClient.create(vertx);
         // https://github.com/spring-projects/spring-framework/issues/2329
         CountDownLatch startup = new CountDownLatch(1);

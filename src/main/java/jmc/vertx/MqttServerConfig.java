@@ -15,7 +15,6 @@ import java.nio.charset.Charset;
 public class MqttServerConfig {
     @Bean("mqttServer")
     public MqttServer mqttServer(Vertx vertx, SimpMessagingTemplate template) {
-        log.info("mqtt server {}", vertx);
         MqttServer mqttServer = MqttServer.create(vertx);
         mqttServer.endpointHandler(endpoint -> {
             // shows main connect info
