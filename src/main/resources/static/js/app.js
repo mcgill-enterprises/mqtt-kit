@@ -57,5 +57,5 @@ $(function () {
     $("form").on('submit', (e) => e.preventDefault());
     $( "#connect" ).click(() => connect());
     $( "#disconnect" ).click(() => disconnect());
-    $( "#send" ).click(() => sentMessage());
+    $( "#send" ).click(() => sendMessage());
 });
