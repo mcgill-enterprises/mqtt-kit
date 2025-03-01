@@ -34,7 +34,7 @@ public class MqttMetrics {
 
         publishTimers = Map.of(
                 "heartbeat", mqttPublishLatency(meterRegistry, "mqtt_publish_latency", "heartbeat"),
-                "messagse", mqttPublishLatency(meterRegistry, "mqtt_publish_latency", "message"));
+                "messages", mqttPublishLatency(meterRegistry, "mqtt_publish_latency", "messages"));
 
         publishFailureCounters = Map.of(
                 "heartbeat", mqttPublishFailure(meterRegistry, "mqtt_publish_failure", "heartbeat"),
