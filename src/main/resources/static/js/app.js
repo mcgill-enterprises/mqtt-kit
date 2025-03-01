@@ -16,12 +16,15 @@ function setConnected(connected) {
     $("#disconnect").prop("disabled", !connected);
     if (connected) {
         $("#conversation").show();
+        $("#claims").show();
     }
     else {
         $("#conversation").hide();
+        $("#claims").hide();
     }
     $("#messages").html("");
     $("#heartbeat").html("");
+    $("#claims").html("");
 }
 
 function disconnect() {
@@ -38,6 +41,11 @@ function connect() {
            console.log("received topic [",  $("#topic").val(), "] message [", message.body, "]");
            showMessage($("#topic").val(), message.body)
         });
+        stompClient.subscribe("/topic/claims", (response) => {
+           console.log("received claims response [", response.body, "]");
+           $("#claims").html("Challenge Response: ")
+           $("#claims").append(response.body);
+        });
     };
     stompClient.activate();
 }
@@ -46,6 +54,12 @@ function sendMessage() {
     stompClient.publish({
         destination: "/app/invoke",
         body: JSON.stringify({'message': $("#message").val()})
+    });
+}
+function sendClaim() {
+    stompClient.publish({
+        destination: '/app/claims',
+        body: JSON.stringify({'claim': $("#claim").val()})
     });
 }
 
@@ -58,4 +72,5 @@ $(function () {
     $( "#connect" ).click(() => connect());
     $( "#disconnect" ).click(() => disconnect());
     $( "#send" ).click(() => sendMessage());
+    $( "#sendClaim" ).click(() => sendClaim());
 });
