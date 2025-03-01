@@ -42,7 +42,7 @@ function connect() {
     stompClient.activate();
 }
 
-function sendName() {
+function sendMessage() {
     stompClient.publish({
         destination: "/app/invoke",
         body: JSON.stringify({'message': $("#message").val()})
@@ -57,5 +57,5 @@ $(function () {
     $("form").on('submit', (e) => e.preventDefault());
     $( "#connect" ).click(() => connect());
     $( "#disconnect" ).click(() => disconnect());
-    $( "#send" ).click(() => sendName());
+    $( "#send" ).click(() => sentMessage());
 });
