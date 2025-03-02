@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.nio.charset.StandardCharsets;
@@ -38,7 +37,7 @@ public class WebSocketController {
         long mqttStartTime = System.currentTimeMillis();
         mqttClient.publish("messages", buffer, MqttQoS.AT_LEAST_ONCE, false, false)
             .onFailure(failed ->
-                        metrics.incrementPublishFailure("messages"))
+                    metrics.incrementPublishFailure("messages"))
             .onComplete(publish ->
                 metrics.recordPublishTime("messages", System.currentTimeMillis() - mqttStartTime, TimeUnit.MILLISECONDS));
     }

@@ -1,0 +1,22 @@
+openapi: 3.0.0
+info:
+  title: MQTT-Kit Definitions
+  description: MQTT-Kit messaging bridge demo
+  version: 1.0.0-SNAPSHOT
+
+servers:
+  - url: http://localhost:8080/ws
+    description: websocket
+  - url: http://localhost:1844
+    description: mqtt
+  - url: http://localhost:9090
+    description: prometheus
+  - url: http://localhost:3000
+    description: grafana
+
+paths:
+  /subscribe/{topic}:
+    stomp:
+      summary: Subscribe to {topic}
+      description: Subscribe to {topic}
+      responses: {}

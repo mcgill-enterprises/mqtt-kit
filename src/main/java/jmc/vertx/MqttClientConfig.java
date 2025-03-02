@@ -5,6 +5,7 @@ import io.vertx.core.Vertx;
 import io.vertx.mqtt.MqttClient;
 import io.vertx.mqtt.MqttClientOptions;
 import io.vertx.mqtt.MqttServer;
+import io.vertx.mqtt.impl.MqttClientImpl;
 import jmc.metrics.MqttMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,17 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 @Slf4j
 public class MqttClientConfig {
-
+    public static void reset(MqttMetrics metrics, MqttClient client) {
+        client.disconnect(disc -> log.info("disconnected {}", disc));
+        client
+        .connect(1883, "localhost").onSuccess(ok -> {
+            metrics.incrementMqttClients();
+            log.info("mqtt client connected {}", ok);
+        }).onFailure(bad -> {
+            log.error(bad.getMessage(), bad.getCause());
+            throw new RuntimeException(bad);
+        });
+    }
     @Autowired
     MqttMetrics metrics;
     @Bean("mqttClient")
@@ -40,8 +51,20 @@ public class MqttClientConfig {
         mqttClient.publishCompletionExpirationHandler(pubAckTimeout -> {
             // https://github.com/mcgill-enterprises/mqtt-kit/issues/4
             log.error("MQTT Client PUBACK Timeout {}", pubAckTimeout);
+
             metrics.incrementPubackTimeouts();
         });
+
+        mqttClient.closeHandler(onClose -> {
+            // needs backoff
+            // does disconnect still call the closeHandler
+            log.warn("mqtt client closed");
+            // io.vertx.core.net.NetSocket.closeHandler
+//            synchronized (MqttClientImpl.class) {
+//                mqttClient.connect(1883, "localhost").onComplete(conn -> log.warn("mqtt client reconnection {}", conn));
+//            }
+        });
+
         mqttClient.connect(1883, "localhost").onSuccess(ok -> {
             metrics.incrementMqttClients();
             startup.countDown();

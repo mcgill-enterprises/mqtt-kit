@@ -7,6 +7,7 @@
         </encoder>
     </appender>
 
+    <logger name="jmc" level="TRACE"/>
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>

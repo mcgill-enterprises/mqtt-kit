@@ -1,3 +1,8 @@
+server:
+  port: 8080
+mqtt:
+  host: localhost
+  port: 1844
 spring:
   application:
     name: mqtt-kit

@@ -17,7 +17,7 @@ Websocket MQTT bridge demo
 Use http://localhost:8080/actuator/prometheus for prometheus agent/grafana 
 ```
 $ curl http://localhost:8080/actuator/prometheus|grep mqtt
-disk_free_bytes{path="mcgill-enterprises/mqtt-kit/."} 2.60163887104E11
+disk_free_bytes{path="mcgill-enteprises/mqtt-kit/."} 2.60163887104E11
 disk_total_bytes{path="mcgill-enterprises/mqtt-kit/."} 5.10770802688E11
 # HELP mqtt_client_conns MQTT Client connections
 # TYPE mqtt_client_conns gauge
@@ -48,4 +48,3 @@ mqtt_publish_latency_seconds_bucket{topic="heartbeat",le="+Inf"} 273
 mqtt_publish_latency_seconds_count{topic="heartbeat"} 273
 mqtt_publish_latency_seconds_sum{topic="heartbeat"} 0.189
 ```
-
