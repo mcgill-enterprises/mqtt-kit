@@ -1,5 +1,6 @@
 # mqtt-kit
 Websocket MQTT bridge demo
+
 Example code for an upcoming presentation on message brokers, JDK23+, and Vertx
 
 ### Measures bridge to broker latency
